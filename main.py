@@ -18,3 +18,16 @@ def import_from_file(filename):
 # can probably add an except to return an error if it doesnt find the file but idrk how to do that:3
 
 #EXPORT
+
+def export_attendance(students, filepath):
+     with open(filepath, 'w') as file: #'w' write file
+        for student in students:
+            present = 'yes' if student['present'] else 'no'
+            file.write(f"{student['first_name']},{student['last_name']},{present}\n")
+
+
+# TESTING
+#if __name__ == "__main__": #
+    #students = import_from_file('C:\\Users\\PC\\Downloads\\attendance.txt')
+ 
+    #export_attendance(students, 'C:\\Users\\PC\\Downloads\\attendance.txt')
