@@ -83,4 +83,26 @@ def edit_student(old_first_name, old_last_name, new_first_name, new_last_name, f
     #add_student("John", "Doe")
     #edit_student("John", "Doe", "Jane", "Doe")
     #export_attendance(students, 'C:\\Users\\PC\\Downloads\\attendance.csv')
-  
+
+# CHECKING ATTENDANCE
+
+def mark_attenfance(students):
+    print("Checking attendance: ")
+    for student in students:
+        # display current attendance status
+        if student['present'] is None: #if there's no previous attendance recorded
+            print(f"{student['first_name']} {student['last_name']} has not had their attendance recorded yet.")
+        else:
+            status = "present" if student['present'] else "absent"
+            print(f"{student['first_name']} {student['last_name']} is currently {status}")
+        
+        # ask user for attendance status
+        new_status = input(f"Is {student['first_name']} {student['last_name']} present today? (yes/no): ").strip().lower()
+
+        # update attendance based on user input
+        if new_status == "yes":
+            student['present'] = True # Mark as present
+        elif new_status == "no":
+            student['present'] = False # Mark as absent
+        else: 
+            print("Invalid input, please enter 'yes' or 'no'.")
