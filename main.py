@@ -107,3 +107,63 @@ def mark_attenfance(students):
             student['present'] = False # Mark as absent
         else: 
             print("Invalid input, please enter 'yes' or 'no'.")
+
+#MANAGING STUDENT'S DATA:
+def student_data():
+ student_firstName = input('Enter students first name: ')
+ student_lastName = input('Enter students last name: ')
+ return f"{student_firstName} {student_lastName}"
+
+def presence_function():
+    presence = input("Was the student present? (yes/no): ")
+    if (presence.lower() == 'yes'):
+        return 'PRESENT'
+    elif (presence.lower() == 'no'):
+        return 'ABSENT'
+    else:
+      print("Invalid output. Please try again. ")
+      return presence_function()
+
+# CREATING 'ATTENDANCE_DICTIONARY' AND CREATING 'STUDENTS' LIST - a list where every element is a dictionary
+def manage_attendance():
+  attendance_dictionary = {}
+  student_id = 1
+  while True:
+   student = student_data()
+   attendance_status = presence_function()
+   attendance_dictionary[student_id] = [student, attendance_status]
+   student_id += 1
+
+   add_student = input("Want to add another student? (yes/no):")
+   print()
+   if add_student.lower() != 'yes':
+     break
+
+  #EXPORT to .csv file (integration with export_attendance())
+  students = [
+    {
+        "first_name": s.split(' ')[0],
+        "last_name": s.split(' ')[1],
+        "present": a == "PRESENT"
+    }
+    for s_id, (s, a) in attendance_dictionary.items()
+  ]
+
+  export_attendance(students)
+
+  #printing students' list:
+  print("ATTENDANCE LIST:")
+  for s_id, (student, status) in attendance_dictionary.items():
+    print(f"STUDENT ID: {s_id}, NAME: {student}, ATTENDANCE STATUS: {status}")
+  print()
+  return attendance_dictionary
+
+# EDITING STUDENT'S ATTENDANCE STATUS
+def edit_attendance(attendance_dictionary, student_id):
+  if student_id in attendance_dictionary:
+    new_attendance_status = presence_function()
+    attendance_dictionary[student_id][1] = new_attendance_status
+  else:
+    print("Student not found")
+  return attendance_dictionary
+  
