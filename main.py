@@ -88,7 +88,8 @@ def edit_student(old_first_name, old_last_name, new_first_name, new_last_name, f
 
 def mark_attenfance(students):
     print("Checking attendance: ")
-    for student in students:
+    for student in students:  
+
         # display current attendance status
         if student['present'] is None: #if there's no previous attendance recorded
             print(f"{student['first_name']} {student['last_name']} has not had their attendance recorded yet.")
