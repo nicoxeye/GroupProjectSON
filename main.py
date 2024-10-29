@@ -167,3 +167,33 @@ def edit_attendance(attendance_dictionary, student_id):
     print("Student not found")
   return attendance_dictionary
   
+#MENU
+if __name__ == "__main__":
+  attendance = {}
+  students = []
+  while True:
+   print("MENU:")
+   print("1. Manage attendance")
+   print("2. Edit attendance")
+   print("3. Import students")
+   print("4. Export attendance")
+   print("5. Exit")
+   choice = input("Choose your option: ")
+
+
+   if choice == "1":
+      attendance = manage_attendance()
+   elif choice == "2":
+      student_id = int(input("Enter student ID: "))
+      edit_attendance(attendance, student_id)
+      print("Updated attendance: ", attendance)
+   elif choice == "3":
+      students = import_from_file()
+      print("Imported students: ", students)
+   elif choice == "4":
+      export_attendance(students)
+   elif choice == "5":
+      print("Exiting the program.")
+      break
+   else:
+      print("Invalid choice. Please try again.")
