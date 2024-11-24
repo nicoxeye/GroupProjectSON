@@ -9,7 +9,7 @@ from main import (
 
 TEST_FILE = "test_students.csv"
 
-# testy z zapisywaniem do pliku i wczytywaniem z pliku
+# tests for saving to file and loading from file
 def test_import_from_file():
     with open(TEST_FILE, "w") as f:
         f.write("John,Doe,yes\nJane,Smith,no\n")
@@ -34,7 +34,7 @@ def test_export_attendance():
     
     os.remove(TEST_FILE)
 
-# testy z operacjami na studentach i obecności
+# tests for operations on students and attendance
 def test_add_student():
     if os.path.exists(TEST_FILE):
         os.remove(TEST_FILE)
