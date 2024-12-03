@@ -63,7 +63,7 @@ class TestAttendanceSystem:
         assert students_from_file == expected_students
 
     #test: adding students
-    def test_add_students(self): #warunki i handling ex jesli student jest juz wiec go nie dodajemy
+    def test_add_students(self):
         #Given
         mock_storage = MockCSVStorage()
         mock_storage.write([
@@ -81,7 +81,7 @@ class TestAttendanceSystem:
         assert mock_storage.data == expected_data
 
     #test: editing students' data
-    def test_edit_student(self): #warunki i handling ex jesli studenta nie ma to nie mozna zedytowac
+    def test_edit_student(self):
         #Given
         mock_storage = MockCSVStorage()
         mock_storage.write([
