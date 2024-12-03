@@ -1,63 +1,69 @@
 import os
 import pytest
+import csv
 from typing import List, Dict
+from mock_storage import MockCSVStorage
 from main import import_from_file, export_attendance, add_student, edit_student, manage_attendance
 
-class MockCSVStorage:
-    def __init__(self):
-        self.data = []
-
-    def write(self, rows: List[Dict[str, str]]):
-        self.data = rows
-    
-    def read(self) -> List[Dict[str, str]]:
-        return self.data
-    
-    def append(self, row: Dict[str, str]):
-        self.data.append(row)
+@pytest.fixture
+def csv_file():
+    file = "students_test.csv"
+    open(file, 'w').close()
+    yield file
+    os.remove(file)
 
 
 class TestAttendanceSystem:
     #test: saving to file
-    def test_save_to_file(self):
+    def test_save_to_file(self, csv_file):
         #Given
         students = [
               {"first_name": "John", "last_name": "Doe", "present": True},
               {"first_name": "Jane", "last_name": "Smith", "present": False},
         ]
-        mock_storage = MockCSVStorage()
 
         #When
-        export_attendance(students, mock_storage)
+        export_attendance(students, csv_file)
 
         #Then
         expected_data = [
            {"first_name": "John", "last_name": "Doe", "present": "yes"},
            {"first_name": "Jane", "last_name": "Smith", "present": "no"}, 
         ]
-        assert mock_storage.data == expected_data
+        
+        with open(csv_file, 'r') as file:
+            reader = csv.DictReader(file)
+            actual_data = [row for row in reader]
+
+        assert actual_data == expected_data
 
     #test: loading from file
-    def test_load_from_file(self):
+    def test_load_from_file(self, csv_file):
         #Given
-        mock_storage = MockCSVStorage()
-        mock_storage.write([
+        students = [
                 {"first_name": "John", "last_name": "Doe", "present": "yes"},
                 {"first_name": "Jane", "last_name": "Smith", "present": "no"},
-            ])
+            ]
+        
+        with open(csv_file, 'w', newline='') as file:
+           fieldnames = ["first_name", "last_name", "present"]
+           writer = csv.DictWriter(file, fieldnames)
+           writer.writeheader()
+           writer.writerows(students) 
 
         #When
-        students = import_from_file(mock_storage)
+        students_from_file = import_from_file(csv_file)
 
         #Then
         expected_students = [
                  {"first_name": "John", "last_name": "Doe", "present": True},
                  {"first_name": "Jane", "last_name": "Smith", "present": False},
             ]
-        assert students == expected_students
+
+        assert students_from_file == expected_students
 
     #test: adding students
-    def test_add_students(self):
+    def test_add_students(self): #warunki i handling ex jesli student jest juz wiec go nie dodajemy
         #Given
         mock_storage = MockCSVStorage()
         mock_storage.write([
@@ -75,7 +81,7 @@ class TestAttendanceSystem:
         assert mock_storage.data == expected_data
 
     #test: editing students' data
-    def test_edit_student(self):
+    def test_edit_student(self): #warunki i handling ex jesli studenta nie ma to nie mozna zedytowac
         #Given
         mock_storage = MockCSVStorage()
         mock_storage.write([
