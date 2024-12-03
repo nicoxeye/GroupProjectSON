@@ -4,27 +4,35 @@ import csv
 #IMPORT
 def import_from_file(filename="students.csv"):
     students = []
+    if not os.path.exists(filename):
+        raise FileNotFoundError(f"The file '{filename}' was not found.")
     try:
-        with open(filename, 'r', newline='') as file: #'r' read file, newline='' to manage newline characters correctly in CSV files
+        with open(filename, 'r', newline='') as file:
             for line in file:
-                cut_parts = line.strip().split(',') #delete whitespaces and create a seperator as ,
-                #in the file: first name, last name
-                if len(cut_parts) == 2:  #no attendance provided
+                if not line.strip():  
+                    continue
+
+                cut_parts = line.strip().split(',') 
+
+                if len(cut_parts) < 2 or len(cut_parts) > 3:
+                    raise ValueError(f"Invalid line format in file: '{line.strip()}'.")
+
+                if len(cut_parts) == 2: 
                     students.append({
                         'first_name': cut_parts[0].strip(),
                         'last_name': cut_parts[1].strip(),
-                        'present': False  #default to False
+                        'present': False
                     })
-                elif len(cut_parts) == 3:  #attendance provided
+                elif len(cut_parts) == 3:  
                     students.append({
                         'first_name': cut_parts[0].strip(),
                         'last_name': cut_parts[1].strip(),
-                        'present': cut_parts[2].strip().lower() == 'yes'  #convert to boolean, 'yes' == True
+                        'present': cut_parts[2].strip().lower() == 'yes'
                     })
-                else: print('Something went wrong when importing the file.')
         return students
     except FileNotFoundError:
-        print(f"The file '{filename}' was not found.") #added if filenotfound exception
+        raise  
+
 
 #EXPORT
 
@@ -66,15 +74,13 @@ def edit_student(old_first_name, old_last_name, new_first_name, new_last_name, f
                 updated = True
             students.append(row)
     
+    if not updated:
+        raise ValueError(f"Student {old_first_name} {old_last_name} not found in the file.")
+    
     with open(filename, 'w', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=["first_name", "last_name", "present"])
         writer.writeheader()
         writer.writerows(students)
-    
-    if updated:
-        print(f"Student: {old_first_name} {old_last_name} has been updated to {new_first_name} {new_last_name}.")
-    else:
-        print("The student hasn't been found")
 
             
 #TESTING
