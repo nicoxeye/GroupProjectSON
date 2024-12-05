@@ -1,12 +1,16 @@
 import os
 import csv
+from mock_storage import MockCSVStorage
 
 #IMPORT
 def import_from_file(filename="students.csv"):
     students = []
     try:
         with open(filename, 'r', newline='') as file: #'r' read file, newline='' to manage newline characters correctly in CSV files
-            for line in file:
+            reader = csv.DictReader(file)
+            lines = file.readlines() #read all the rows at once
+
+            for line in lines[1:]: #skip the 1st row (headlines)
                 cut_parts = line.strip().split(',') #delete whitespaces and create a seperator as ,
                 #in the file: first name, last name
                 if len(cut_parts) == 2:  #no attendance provided
@@ -23,13 +27,18 @@ def import_from_file(filename="students.csv"):
                     })
                 else: print('Something went wrong when importing the file.')
         return students
+    
     except FileNotFoundError:
         print(f"The file '{filename}' was not found.") #added if filenotfound exception
 
 #EXPORT
 
 def export_attendance(students, filename="students.csv"):
+     fieldnames = ["first_name", "last_name", "present"]
+
      with open(filename, 'w', newline='') as file: #'w' write file
+        writer = csv.DictWriter(file, fieldnames)
+        writer.writeheader()
         for student in students:
             present = 'yes' if student['present'] else 'no'
             file.write(f"{student['first_name']},{student['last_name']},{present}\n")
@@ -38,39 +47,67 @@ def export_attendance(students, filename="students.csv"):
 #ADDING NEW STUDENTS AND UPDATING DATABASE
 
 # function that adds new student to the list and saves it to the file
-def add_student(first_name, last_name, filename="students.csv"):
-    file_exists = os.path.isfile(filename)
+def add_student(first_name, last_name, storage):
+    if isinstance(storage, str): #if storage is a path to file
+       file_exists = os.path.isfile(storage)
     
-    with open(filename, 'a', newline='') as file:
+       with open(storage, 'a', newline='') as file:
         writer = csv.writer(file)
         
         if not file_exists:
-            writer.writerow(["first_name", "last_name", "present"])
+           writer.writerow(["first_name", "last_name", "present"])
+
+        writer.writerow(["first_name", "last_name", "no"]) #present is "no" by default
+
+    elif isinstance(storage, MockCSVStorage): #if storage is mockcsvstorage
+        students = storage.read()
+
+        if any(student["first_name"] == first_name and student["last_name"] == last_name for student in students):
+           raise Exception("Student already exists in the database")
         
-        # "present" is false by default
-        writer.writerow([first_name, last_name, False])
-    print(f"Student {first_name} {last_name} was added to {filename}.")
+        storage.append({"first_name": first_name, "last_name": last_name, "present": "no"})
+    print(f"Student {first_name} {last_name} was added to {storage}.")
 
 
 # function that edits student list
-def edit_student(old_first_name, old_last_name, new_first_name, new_last_name, filename="students.csv"):
-    students = []
+def edit_student(old_first_name, old_last_name, new_first_name, new_last_name, storage):
     updated = False
 
-    with open(filename, 'r') as file:
-        reader = csv.DictReader(file)
-        for row in reader:
+    if isinstance(storage, str): #if storage is a path to file
+        students = []
+        with open(storage, 'r') as file:
+          reader = csv.DictReader(file)
+          for row in reader:
             if row["first_name"] == old_first_name and row["last_name"] == old_last_name:
-                row["first_name"] = new_first_name
-                row["last_name"] = new_last_name
-                updated = True
+                 row["first_name"] = new_first_name
+                 row["last_name"] = new_last_name
+                 updated = True
             students.append(row)
     
-    with open(filename, 'w', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=["first_name", "last_name", "present"])
-        writer.writeheader()
-        writer.writerows(students)
-    
+        with open(storage, 'w', newline='') as file:
+           writer = csv.DictWriter(file, fieldnames=["first_name", "last_name", "present"])
+           writer.writeheader()
+           writer.writerows(students)
+
+    elif isinstance(storage, MockCSVStorage): #if storage is mockcsvstorage
+        students = storage.read()
+        print(f"Before edit: {students}")
+        student_found = False
+       
+        for student in students:
+          if student["first_name"] == old_first_name and student["last_name"] == old_last_name:
+               student["first_name"] = new_first_name
+               student["last_name"] = new_last_name
+               student_found = True
+               updated = True
+               break #found + updated so no need to continue 
+
+        if not student_found:
+          raise Exception("Student does not exist in the database")
+        
+        storage.write(students)
+        print(f"After edit: {students}")
+       
     if updated:
         print(f"Student: {old_first_name} {old_last_name} has been updated to {new_first_name} {new_last_name}.")
     else:
